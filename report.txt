@@ -1,0 +1,327 @@
+1. 
+StudentWorld
+public
+<--The actor class calls all these functions.-->
+-~StudentWorld();
+	*frees dynamically allocated data in StudentWorld
+-bool distToFracmanGreaterThanN(int x, int y, int n);
+	*tells you if distance to FrackMan is greater than distance n
+-bool distGreaterThanNSquares(int x, int y, int n, bool objSpecific, int imageID, bool otherObj);
+	*tells if you distance to object is greater than distance n
+	*can pass in bool value to see if you want to only look at specific type of object
+	*can pass in bool value to see if you want to only look at other objects of same type
+-bool dirtExistsInBox(int x, int y, int dx, int dy);
+	*tells if dirt exists in rectangle starting at (x,y)
+-bool boulderExistsInBox(int x, int y, int dx, int dy);
+	*tells if boulder exists in rectangle starting at (x,y)
+-bool poolExistsInBox(int x, int y, int dx, int dy);
+	*tells if pool exists in rectangle starting at (x,y)
+-bool objectAnnoyProtester(int bX, int bY, int points);
+	*lets object annoy multiple protesters
+-bool objectAnnoyHardProtester(int bX, int bY, int points);
+ 	*lets object annoy multiple hardcore protesters
+-bool deleteDirt(int startX, int startY);
+	*deletes 4x4 dirt box starting from (x,y)
+-Actor* bribeProtester(int x, int y);
+	*bribes a single protester
+-FrackMan* getFrackMan();
+	*returns pointer to FrackMan
+-Actor::Direction getOptimalPath(int x, int y);
+	*returns next direction to take from position(x,y) to end position(60,60)
+-Actor::Direction getPathToFrackMan(int x, int y);
+	*returns next direction to take from position(x,y) to FrackMan's position
+-void findOptimalPath(Actor::Direction maze[61][61], int sr, int sc, int depth);
+	*updates optimal path for maze array from (sr,sc) and searches array until reaching certain depth
+-void callFindOptimalPath();
+	*calls findOptimalPath() for m_optimalPath[61][61] 2D array
+-std::vector<Actor*>* getObjects();
+	*returns pointer to pointer to m_object vector
+-void setVisibleWithinDistanceN(int n);
+	*set all objects visible within distance n of FrackMan
+-void decNumProtesters();
+	*decrease m_numProtesters by 1
+-int min(int a, int b);
+	*returns min of two numbers
+-int max(int a, int b);
+	*returns max of two numbers
+-int randInt(int min, int max);
+	*returns random int from min(inclusive) to max(inclusive)
+-int abs(int a);
+	*returns abs value of number
+private
+-void resetPosition(int& x, int& y);
+	*resets start position of object e.g. boulder if it's within distance n of another object
+-int getNumberOfBarrelsRemainingToBePickedUp();
+	*returns remaining number of barrels to be picked up
+-bool theplayerCompletedTheCurrentLevel();
+	*returns a bool indicating whether all the barrels were picked up
+-void setDisplayText();
+	*resets display text
+-std::string scorePadding(string score);
+	*gives padding to a score
+-std::string statPadding(int statistic, int lessThan);
+	*gives padding to a statistic
+-void addSonarWater();
+	*has a certain percentage chance to add a sonar(20%) or water(80%) at every tick
+-void addProtester();
+	*has a certain percentage chance of adding a hard core protester / protester at a tick where it is allowed to add a new protester
+
+Actor
+public
+-virtual ~Actor();
+	*virtual --> when destroying an Actor, you want function call of object to be determined at runtime
+	*frees dynamically allocated data in Actor
+-virtual void doSomething() = 0;
+	*virtual --> only derived classes can implement doSomething(), don't want to be able to make an actual Actor object
+	*does something to object 
+-virtual void annoy(int points);
+	*virtual --> when referring to a vector of Actor*, you want function call of object to be determined at runtime
+	*annoys object
+-virtual string getState();
+	*virtual --> when referring to a vector of Actor*, you want function call of object to be determined at runtime
+	*returns object's state
+-void updateState(string newState);
+	*update object's state
+-bool alive();
+	*returns bool indicating whether or not object is alive
+-void setDead();
+	*sets object to dead
+-void incTick();
+	*increments object's tick count
+-void resetTick();
+	*resets tick count to 0
+-int getTick();
+	*returns tick at certain time
+-StudentWorld* getWorld();
+	*returns pointer to StudentWorld object
+
+Dirt
+public
+-virtual ~Dirt();
+	*virtual --> when destroying a Dirt, you want function call of object to be determined at runtime
+	*frees dynamically allocated data in Dirt
+-virtual void doSomething();
+	*does nothing for dirt
+
+Boulder
+public
+-virtual ~Boulder();
+	*virtual --> when destroying a Boulder, you want function call of object to be determined at runtime
+	*frees dynamically allocated data in Boulder
+-virtual void doSomething();
+	*if state is stable, and there is still dirt under boulder, do nothing
+	*if there is no more dirt underneath boulder, change state to waiting
+	*if state is waiting after 30 ticks, have boulder fall
+	*if boulder hits a protester or FrackMan, set the object to dead, and update point count
+
+ActivatingObject
+public
+-virtual ~ActivatingObject();
+	*virtual --> when destroying an ActivatingObject, you want function call of object to be determined at runtime
+	*frees dynamically allocated data in ActivatingObject
+-virtual void doSomething() = 0;
+	*virtual --> only derived classes can implement doSomething(), don't want to be able to make an actual ActivatingObject object
+	*does something to object 
+-int getMaxTick();
+	*returns maxTick
+
+Barrel
+public
+-virtual ~Boulder();
+	*virtual --> when destroying a Boulder, you want function call of object to be determined at runtime
+	*frees dynamically allocated data in Boulder
+-virtual void doSomething();
+	*if Frackman is within distance 4 of barrel, set it to visible
+	*if Frackman is within distance 3 of barrel, set it to dead, update point count
+
+Gold
+public
+-virtual ~Gold();
+	*virtual --> when destroying a Gold, you want function call of object to be determined at runtime
+	*frees dynamically allocated data in Gold
+-virtual void doSomething();
+	*if Frackman is within distance 4 of gold, set it to visible
+	*if state is permanent, it can be picked up by a Frackman
+	*if state is temporary, it can be picked up by a protester, it vanishes after a certain amount of ticks
+		*if protester picks up gold, annoy protester
+
+Sonar
+public
+-virtual ~Sonar();
+	*virtual --> when destroying a Sonar, you want function call of object to be determined at runtime
+	*frees dynamically allocated data in Sonar
+-virtual void doSomething();
+	*if Frackman is within distance 3 of sonar, set it to dead, update point count, update sonar count
+	*else if tick = maxTick, set it to dead
+
+Water
+public
+-virtual ~Water();
+	*virtual --> when destroying a Water, you want function call of object to be determined at runtime
+	*frees dynamically allocated data in Water
+-virtual void doSomething();
+	*if Frackman is within distance 3 of water, set it to dead, update point count, update sonar count
+	*else if tick = maxTick, set it to dead
+
+Squirt
+public
+-virual ~Squirt();
+	*virtual --> when destroying a Squirt, you want function call of object to be determined at runtime
+	*frees dynamically allocated data in Squirt
+-virtual void doSomething();
+	*while squirt is travelling, have it annoy any protesters in its way,
+	*if it can't move any further in its direction, set it to dead
+
+FrackMan
+-virtual ~FrackMan();
+	*virtual --> when destroying a FrackMan, you want function call of object to be determined at runtime
+	*frees dynamically allocated data in FrackMan
+-virtual void doSomething();
+	*destroy dirt at Frackman's (x,y) location
+	*if key is escape, decrement lives, set to dead, and set hp to 0
+	*if key is left, switch directions if not already left or move left if possible
+	*if key is right, switch directions if not already right or move right if possible
+	*if key is up, switch directions if not already up or move up if possible
+	*if key is down, switch directions if not already down or move down if possible
+	*if key is 'z' or 'Z', activate sonar
+	*if key is tab, drop gold at (x,y) location
+	*if key is space, shoot squirt gun
+-virtual void annoy(int points);
+	*decrement player's hp by points
+	*if hp <= 0, set to dead
+-int getHp();
+	*return m_hp
+-int getWater();
+	*return m_water
+-int getSonar();
+	*return m_sonar
+-int getGold();
+	*return m_gold
+-void changeHp(int change);
+	*changeHp by change
+-void changeWater(int change);
+	*change water by change
+-void changeSonar(int change);
+	*change sonar by change
+-void changeGold(int change);
+	*cahnge gold by change
+
+Protester
+-virtual ~Protester();
+	*virtual --> when destroying a Protester, you want function call of object to be determined at runtime
+	*frees dynamically allocated data in Protester
+-virtual void doSomething() = 0;
+	*virtual --> only derived classes can implement doSomething(), don't want to be able to make an actual Actor object
+	*does something to object 
+-virtual void annoy(int points) = 0;
+	*virtual --> only derived classes can implement annoy(), don't want to be able to make an actual Actor object
+	*does something to object 
+-int getHp();
+	*return m_hp
+-void changeHp(int change);
+	*change hp by change
+-bool facingFrackMan(int x, int y, Direction direction);
+	*if frackman's 
+-bool inSight(int x, int y);
+	*if frackman is direct horizontal/vertical sight of protester without any dirt/boulders in the way, return true
+	*otherwise, return false
+-bool canMakeTurn(int x, int y, Direction current);
+	*returns true if protester can make turn in given direction without hitting dirt or boulders
+	*otherwise, return false
+-Direction makePerpendicularTurn(int x, int y, Direction current);
+	*if protester can make perpendicular turn in two directions randomly return one of the directions
+	*else if protester can only make a perpendicular turn in one direction only return that direction
+	*else return the direction none
+-Direction pickNewDirection();
+	*randomly pick a new direction
+-Direction chooseNotBlockedDirection(Direction start, int x, int y);
+	*choose a new direction until it is not blocked by dirt or boulders
+-void checkDirtBoulder(int& x, int& y, int& dx, int& dy, Direction start);
+	*pass in a (x,y) position, directions, and uninitialized dx and dy variables to update the x and y to check for dirt/boulders at the new (x,y) position after traveling in said direction
+
+Regular
+-virtual ~Regular();
+	*virtual --> when destroying a Regular, you want function call of object to be determined at runtime
+	*frees dynamically allocated data in Regular
+-virtual void doSomething();
+	*if not alive, return
+	*if stunned, stay stunned for the amount of ticks to be stunned for
+	*if protester can move this turn,
+		*if it can't shout, it doesn't do anything
+		*else if state is "leave", move one step closer to (60,60) to be removed
+		*else if dist to FrackMan is < 4 and it can shout and it is facing the frackman
+			*shout at the frackman
+		*else if frackman is in sight
+			*move towards frackman
+		*else
+			*if frackman's m_numSquaresToMoveInCurrentDirection is 0,
+				*choose new direction to move in
+			*else if frackman can make a perependicular turn
+				*set direction to direction to take to make perpendicular turn
+			*move in said direction
+			*if protester cannot move in said direction, set m_numSquaresToMoveInCurrentDirection to 0
+-virtual void annoy(int points);
+	*change m_hp by points
+	* if m_hp <= 0, update state to "leave", set m_stun to false, and reset tick to 0
+	* else, set m_stun to true, and reset tick to 0
+
+Hard
+-virtual ~Hard();
+	*virtual --> when destroying a Protester, you want function call of object to be determined at runtime
+	*frees dynamically allocated data in Protester
+-virtual void doSomething();
+	*if not alive, return
+	*if stunned, stay stunned for the amount of ticks to be stunned for
+	*if protester can move this turn,
+		*if it can't shout, it doesn't do anything
+		*else if state is "leave", move one step closer to (60,60) to be removed
+		*else if dist to FrackMan is < 4 and it can shout and it is facing the frackman
+			*shout at the frackman
+		*else if dist to FrackMan is > 4 and it can track the frackman with its cellphone
+			*move in that direction by one step
+		*else if frackman is in sight
+			*move towards frackman
+		*else
+			*if frackman's m_numSquaresToMoveInCurrentDirection is 0,
+				*choose new direction to move in
+			*else if frackman can make a perependicular turn
+				*set direction to direction to take to make perpendicular turn
+			*move in said direction
+			*if protester cannot move in said direction, set m_numSquaresToMoveInCurrentDirection to 0
+-virtual void annoy(int points);
+	*change m_hp by points
+	* if m_hp <= 0, update state to "leave", set m_stun to false, and reset tick to 0
+	* else, set m_stun to true, and reset tick to 0
+
+2. I implemented all of the game's functionality.
+
+3. I had duplicated variables in the regular and hard protester classes because I didn't want to have the protester class have a lot of functions to increment/decrement and get the member variables when accessing them from the regular/hard protester classes. This is also why the annoy function is duplicated in the classes because they would also have to access those same member variables.
+
+4. 
+I tested my StudentWorld class by making sure it initialized all the dirt, frackman, boulder, barrel, and gold objects. It's destructor and cleanup method had to free dynamically allocated data. It had to set the display text, add sonars/water, add protesters, find the optimalPath to Frackman so that hard core protesters could track the frackman, and the frackman had to doSomething(). All actors in m_object had to doSomething() each time move() was called. It had to delete dead objects. If the Frackman wasn't alive, it had to end the game. It had to check when the level was finished. 
+
+I tested my actor class by making sure I could use its methods its derived classes' objects. 
+
+I tested my dirt class by making sure it set itself to visible on the screen after creating them. I made sure that the dirt was in the right place when they were created on the screen. I deleted dirt when the FrackMan fracked away at the dirt. 
+
+I tested my boulder class by making sure the right amount of them appeared on each level. The boulders needed to clear the dirt around them. The boulders need to enter into waiting state when the dirt below them was removed. When in a falling state, I tested to make sure the boulders killed a protester/the FrackMan and didn't stop going down until after hitting dirt or another boulder.
+
+I tested my ActiviatingObject class by making sure I could use its methods its derived classes' objects.
+
+I tested my barrel class by making sure it set itself to dead when the FrackMan picked it up. It also increased the game's score when it was picked up. It had to start out as not visible.
+
+I tested my gold class by making sure by making sure it became visible when the FrackMan was close enough to it. It could only picked up by the FrackMan when it was permanent. The protester could pick it up if it was temporary. If the protester was a regular protester, the protester would set its state to leave. If the protester was a hard protester, the protester would be stunned. 
+
+I tested the sonar class by making sure it appeared in the upper left hand corner in the game. It also had to reveal the objects within a certain distance around it e.g. barrels and gold. 
+
+I tested the water class by making sure they appeared in dirtless spots in the screen and couldn't overlap with each other. The water when picked up by the FrackMan would increment the FrackMan's water supply and increase his score. 
+
+I tested the squirt class by making sure the squirt travelled the right distance. The squirt had to annoy multiple protesters within a certain distance. The squirt had to start 4 spaces in front of the FrackMan and had the same direction as the FrackMan was facing. After traveling its max distance, it would be set to dead.
+
+I tested my FrackMan class by making sure it did the right thing when a certain button was pressed. It also had to appear on the screen when setVisible was set to true. It had to destroy the dirt that it walked on. It also had to be annoyed by protesters and boulders. It also had to be greater than a distance of 3 from boulders.
+
+I tested my protester class by making sure its derived classes could use its functions and data members properly. 
+
+I tested my regular class by making sure it was stunned when it was supposed to be stunned. It also had to leave the oil field by following the optimal path to (60,60) when it had no more hp. It also had to annoy the Frackman properly. If it was in sight of the frackman, it had to change its direction to move towards the frackman. It had to make perpendicular turns and move properly. 
+
+I tested my hard class by making sure it was stunned when it was supposed to be stunned. It also had to leave the oil field by following the optimal path to (60,60) when it had no more hp. It also had to annoy the Frackman properly. If it could track the frackman with its cellphone, it had to move towards the frackman. If it was in sight of the frackman, it had to change its direction to move towards the frackman. It had to make perpendicular turns and move properly. 
